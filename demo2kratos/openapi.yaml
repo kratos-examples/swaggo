@@ -3,7 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: ArticleService API
+    title: demo2kratos-title
     version: 0.0.1
 paths:
     /articles:
@@ -17,7 +17,7 @@ paths:
                   schema:
                     type: integer
                     format: int32
-                - name: pageSize
+                - name: page_size
                   in: query
                   schema:
                     type: integer
@@ -115,7 +115,7 @@ components:
                     type: string
                 content:
                     type: string
-                studentId:
+                student_id:
                     type: string
         article.CreateArticleReply:
             type: object
@@ -129,7 +129,7 @@ components:
                     type: string
                 content:
                     type: string
-                studentId:
+                student_id:
                     type: string
         article.DeleteArticleReply:
             type: object
@@ -165,7 +165,7 @@ components:
                     type: string
                 content:
                     type: string
-                studentId:
+                student_id:
                     type: string
 tags:
     - name: ArticleService
