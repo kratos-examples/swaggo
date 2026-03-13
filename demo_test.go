@@ -6,6 +6,7 @@
 package examples_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,7 +18,14 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if examples.GetDemo1BasePath() == examples.GetDemo1ForkPath() {
+	demo1Base, demo1Fork := examples.GetDemo1BasePath(), examples.GetDemo1ForkPath()
+	fmt.Println(demo1Base, "vs", demo1Fork)
+	if demo1Base == demo1Fork {
+		os.Exit(0)
+	}
+	demo2Base, demo2Fork := examples.GetDemo2BasePath(), examples.GetDemo2ForkPath()
+	fmt.Println(demo2Base, "vs", demo2Fork)
+	if demo2Base == demo2Fork {
 		os.Exit(0)
 	}
 	os.Exit(m.Run())

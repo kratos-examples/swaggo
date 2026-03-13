@@ -3,16 +3,11 @@ module github.com/yylego/kratos-examples
 go 1.25.0
 
 require (
-	github.com/yylego/kratos-compare v0.0.1
+	github.com/yylego/kratos-compare v0.0.4
 	github.com/yylego/kratos-examples/demo1kratos v0.0.0
 	github.com/yylego/kratos-examples/demo2kratos v0.0.0
 	github.com/yylego/osexistpath v0.0.0
 	github.com/yylego/runpath v0.0.0
-)
-
-replace (
-	github.com/yylego/kratos-examples/demo1kratos => ./demo1kratos
-	github.com/yylego/kratos-examples/demo2kratos => ./demo2kratos
 )
 
 require (

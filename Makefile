@@ -280,10 +280,11 @@ merge-step7:
 		echo "# depbump update -D: 升级直接依赖（-D 是默认的，优先用 depbump，出错时才用 depbump update -D）"; \
 		depbump || depbump update -D; \
 		echo "# 在项目根目录里进第1个项目，优先尝试完整升级，失败则使用仅直接依赖升级"; \
-		cd demo1kratos && (depbump || depbump update -D); \
+		cd $(CURDIR)/demo1kratos && (depbump || depbump update -D); \
 		echo "# 在项目根目录里进第2个项目，优先尝试完整升级，失败则使用仅直接依赖升级"; \
-		cd demo2kratos && (depbump || depbump update -D); \
+		cd $(CURDIR)/demo2kratos && (depbump || depbump update -D); \
 	fi
+	# 注意: if-else 块内多条 cd 在同一个 shell 中执行，必须用 $(CURDIR) 绝对路径，否则第二个 cd 会基于第一个 cd 后的目录
 	@echo "✅ 已升级所有依赖包"
 	# 【备注】标准升级命令（使用 go get -u）：
 	# depbump: 使用 go get -u ./... 升级当前模块依赖
