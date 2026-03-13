@@ -42,7 +42,7 @@ Code differences compared to source project.
 +		},
 +	})
 +
-+	zapLog.SUG.Infoln("[DOC]", "(http://127.0.0.1:"+swaggokratos.MustGetPortNum(c.Http.Addr)+"/doc/swagger/a/index.html)")
++	zapLog.SUG.Infoln("[DOC]", "(http://127.0.0.1:"+swaggokratos.MustGetPortNum(c.Http.Address)+"/doc/swagger/a/index.html)")
 +	zapLog.SUG.Infoln("接口文档添加成功")
  }
 ```
