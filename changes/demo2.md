@@ -2,53 +2,63 @@
 
 Code differences compared to source project.
 
-## Makefile (+1 -1)
+## buf.gen.yaml (+1 -0)
 
 ```diff
-@@ -42,7 +42,7 @@
-  	       --go_out=paths=source_relative:./api \
-  	       --go-http_out=paths=source_relative:./api \
-  	       --go-grpc_out=paths=source_relative:./api \
--	       --openapi_out=fq_schema_naming=true,default_response=false:. \
-+	       --openapi_out=fq_schema_naming=true,default_response=false,title="demo2kratos-title",naming=proto:. \
- 	       $(API_PROTO_FILES)
- 
- .PHONY: errors
+@@ -20,3 +20,4 @@
+     opt:
+       - fq_schema_naming=true
+       - default_response=false
++      - title=demo2kratos-title
 ```
 
-## cmd/demo2kratos/main.go (+7 -0)
+## cmd/demo2kratos/main.go (+21 -0)
 
 ```diff
-@@ -7,6 +7,7 @@
- 	"github.com/go-kratos/kratos/v2"
- 	"github.com/go-kratos/kratos/v2/config"
- 	"github.com/go-kratos/kratos/v2/config/file"
-+	"github.com/go-kratos/kratos/v2/encoding/json"
- 	"github.com/go-kratos/kratos/v2/log"
- 	"github.com/go-kratos/kratos/v2/middleware/tracing"
- 	"github.com/go-kratos/kratos/v2/transport/grpc"
-@@ -29,6 +30,12 @@
+@@ -5,6 +5,7 @@
+ 	"log/slog"
+ 	"os"
+ 
++	"github.com/go-kratos/kratos/contrib/encoding/json/v3"
+ 	"github.com/go-kratos/kratos/contrib/otel/v3/tracing"
+ 	"github.com/go-kratos/kratos/v3"
+ 	"github.com/go-kratos/kratos/v3/config"
+@@ -32,6 +33,26 @@
  
  func init() {
  	flag.StringVar(&flagconf, "conf", "./configs", "config path, eg: -conf config.yaml")
 +
-+	//配置http服务回复的json的字段名称风格，是按照proto里写的名称，还是按照小写驼峰的规则
-+	//json.MarshalOptions.UseProtoNames = true  //UseProtoNames uses proto field name instead of lowerCamelCase name in JSON
-+	//当你不配置的时候，就不能使用proto里自定的名称，而是按照默认的小写驼峰的风格
-+	//推荐不要配置，即，使用默认 false 的规则，这样保证和其它语言默认配置相同（否则生成其它语言消息时还要配置（但还学不会如何配置））
-+	json.MarshalOptions.UseProtoNames = true
++	// Configure JSON field naming for HTTP responses.
++	// UseProtoNames=false uses lowerCamelCase, aligned with the protobuf JSON spec
++	// and protobuf-ts generated frontend code (the camelCase convention).
++	// 配置 HTTP 响应的 JSON 字段命名：UseProtoNames=false 用小写驼峰，
++	// 与 protobuf JSON 规范、protobuf-ts 前端生成代码一致。
++	//
++	// Alternative (snake_case): set this to true, AND add "naming=proto" to the
++	// protoc-gen-openapi opt block in buf.gen.yaml, so the served openapi doc uses
++	// snake_case too. The runtime codec and the doc must agree: both camelCase or
++	// both snake_case, otherwise the Swagger UI sends names the backend cannot bind.
++	// 备选方案（snake_case）：把这里改成 true，同时在 buf.gen.yaml 的
++	// protoc-gen-openapi opt 里加上 "naming=proto"，让文档也用 snake_case。
++	// 运行时命名和文档命名必须一致：要么都驼峰、要么都 snake，
++	// 否则 Swagger UI 发出的字段名后端绑不上。
++	json.MarshalOptions.UseProtoNames = false
++
++	// Set UseEnumNumbers to serialize enums as numbers
++	// 设置枚举序列化为数字
++	json.MarshalOptions.UseEnumNumbers = true
  }
  
- func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+ func newApp(logger *slog.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 ```
 
 ## internal/server/http.go (+24 -0)
 
 ```diff
-@@ -4,9 +4,14 @@
- 	"github.com/go-kratos/kratos/v2/log"
- 	"github.com/go-kratos/kratos/v2/middleware/recovery"
- 	"github.com/go-kratos/kratos/v2/transport/http"
+@@ -5,9 +5,14 @@
+ 
+ 	"github.com/go-kratos/kratos/v3/middleware/recovery"
+ 	"github.com/go-kratos/kratos/v3/transport/http"
 +	"github.com/yylego/kratos-examples/demo2kratos"
  	pb "github.com/yylego/kratos-examples/demo2kratos/api/article"
  	"github.com/yylego/kratos-examples/demo2kratos/internal/conf"
@@ -59,8 +69,8 @@ Code differences compared to source project.
 +	"github.com/yylego/zaplog"
  )
  
- func NewHTTPServer(c *conf.Server, article *service.ArticleService, logger log.Logger) *http.Server {
-@@ -26,5 +31,24 @@
+ func NewHTTPServer(c *conf.Server, article *service.ArticleService, logger *slog.Logger) *http.Server {
+@@ -27,5 +32,24 @@
  	}
  	srv := http.NewServer(opts...)
  	pb.RegisterArticleServiceHTTPServer(srv, article)
@@ -117,7 +127,7 @@ Code differences compared to source project.
 +}
 ```
 
-## openapi.yaml (+5 -5)
+## openapi.yaml (+1 -1)
 
 ```diff
 @@ -3,7 +3,7 @@
@@ -129,41 +139,5 @@ Code differences compared to source project.
      version: 0.0.1
  paths:
      /articles:
-@@ -17,7 +17,7 @@
-                   schema:
-                     type: integer
-                     format: int32
--                - name: pageSize
-+                - name: page_size
-                   in: query
-                   schema:
-                     type: integer
-@@ -115,7 +115,7 @@
-                     type: string
-                 content:
-                     type: string
--                studentId:
-+                student_id:
-                     type: string
-         article.CreateArticleReply:
-             type: object
-@@ -129,7 +129,7 @@
-                     type: string
-                 content:
-                     type: string
--                studentId:
-+                student_id:
-                     type: string
-         article.DeleteArticleReply:
-             type: object
-@@ -165,7 +165,7 @@
-                     type: string
-                 content:
-                     type: string
--                studentId:
-+                student_id:
-                     type: string
- tags:
-     - name: ArticleService
 ```
 

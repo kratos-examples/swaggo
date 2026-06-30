@@ -3,7 +3,7 @@
 
 openapi: 3.0.3
 info:
-    title: StudentService API
+    title: demo1kratos-title
     version: 0.0.1
 paths:
     /students:

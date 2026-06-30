@@ -2,13 +2,63 @@
 
 Code differences compared to source project.
 
+## buf.gen.yaml (+1 -0)
+
+```diff
+@@ -20,3 +20,4 @@
+     opt:
+       - fq_schema_naming=true
+       - default_response=false
++      - title=demo1kratos-title
+```
+
+## cmd/demo1kratos/main.go (+21 -0)
+
+```diff
+@@ -5,6 +5,7 @@
+ 	"log/slog"
+ 	"os"
+ 
++	"github.com/go-kratos/kratos/contrib/encoding/json/v3"
+ 	"github.com/go-kratos/kratos/contrib/otel/v3/tracing"
+ 	"github.com/go-kratos/kratos/v3"
+ 	"github.com/go-kratos/kratos/v3/config"
+@@ -32,6 +33,26 @@
+ 
+ func init() {
+ 	flag.StringVar(&flagconf, "conf", "./configs", "config path, eg: -conf config.yaml")
++
++	// Configure JSON field naming for HTTP responses.
++	// UseProtoNames=false uses lowerCamelCase, aligned with the protobuf JSON spec
++	// and protobuf-ts generated frontend code (the camelCase convention).
++	// 配置 HTTP 响应的 JSON 字段命名：UseProtoNames=false 用小写驼峰，
++	// 与 protobuf JSON 规范、protobuf-ts 前端生成代码一致。
++	//
++	// Alternative (snake_case): set this to true, AND add "naming=proto" to the
++	// protoc-gen-openapi opt block in buf.gen.yaml, so the served openapi doc uses
++	// snake_case too. The runtime codec and the doc must agree: both camelCase or
++	// both snake_case, otherwise the Swagger UI sends names the backend cannot bind.
++	// 备选方案（snake_case）：把这里改成 true，同时在 buf.gen.yaml 的
++	// protoc-gen-openapi opt 里加上 "naming=proto"，让文档也用 snake_case。
++	// 运行时命名和文档命名必须一致：要么都驼峰、要么都 snake，
++	// 否则 Swagger UI 发出的字段名后端绑不上。
++	json.MarshalOptions.UseProtoNames = false
++
++	// Set UseEnumNumbers to serialize enums as numbers
++	// 设置枚举序列化为数字
++	json.MarshalOptions.UseEnumNumbers = true
+ }
+ 
+ func newApp(logger *slog.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
+```
+
 ## internal/server/http.go (+24 -0)
 
 ```diff
-@@ -4,9 +4,14 @@
- 	"github.com/go-kratos/kratos/v2/log"
- 	"github.com/go-kratos/kratos/v2/middleware/recovery"
- 	"github.com/go-kratos/kratos/v2/transport/http"
+@@ -5,9 +5,14 @@
+ 
+ 	"github.com/go-kratos/kratos/v3/middleware/recovery"
+ 	"github.com/go-kratos/kratos/v3/transport/http"
 +	"github.com/yylego/kratos-examples/demo1kratos"
  	pb "github.com/yylego/kratos-examples/demo1kratos/api/student"
  	"github.com/yylego/kratos-examples/demo1kratos/internal/conf"
@@ -19,8 +69,8 @@ Code differences compared to source project.
 +	"github.com/yylego/zaplog"
  )
  
- func NewHTTPServer(c *conf.Server, student *service.StudentService, logger log.Logger) *http.Server {
-@@ -26,5 +31,24 @@
+ func NewHTTPServer(c *conf.Server, student *service.StudentService, logger *slog.Logger) *http.Server {
+@@ -27,5 +32,24 @@
  	}
  	srv := http.NewServer(opts...)
  	pb.RegisterStudentServiceHTTPServer(srv, student)
@@ -68,5 +118,19 @@ Code differences compared to source project.
 +	content = yamlv3edit.ModifyYamlFieldValue(content, "info.title", docTitle)
 +	return content
 +}
+```
+
+## openapi.yaml (+1 -1)
+
+```diff
+@@ -3,7 +3,7 @@
+ 
+ openapi: 3.0.3
+ info:
+-    title: StudentService API
++    title: demo1kratos-title
+     version: 0.0.1
+ paths:
+     /students:
 ```
 
