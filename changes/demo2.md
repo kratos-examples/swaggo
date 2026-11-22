@@ -23,7 +23,7 @@ Code differences compared to source project.
  	"github.com/go-kratos/kratos/contrib/otel/v3/tracing"
  	"github.com/go-kratos/kratos/v3"
  	"github.com/go-kratos/kratos/v3/config"
-@@ -32,6 +33,26 @@
+@@ -31,6 +32,26 @@
  
  func init() {
  	flag.StringVar(&flagconf, "conf", "./configs", "config path, eg: -conf config.yaml")
@@ -55,9 +55,9 @@ Code differences compared to source project.
 ## internal/server/http.go (+24 -0)
 
 ```diff
-@@ -5,9 +5,14 @@
- 
+@@ -6,9 +6,14 @@
  	"github.com/go-kratos/kratos/v3/middleware/recovery"
+ 	"github.com/go-kratos/kratos/v3/middleware/validate"
  	"github.com/go-kratos/kratos/v3/transport/http"
 +	"github.com/yylego/kratos-examples/demo2kratos"
  	pb "github.com/yylego/kratos-examples/demo2kratos/api/article"
@@ -70,7 +70,7 @@ Code differences compared to source project.
  )
  
  func NewHTTPServer(c *conf.Server, article *service.ArticleService, logger *slog.Logger) *http.Server {
-@@ -27,5 +32,24 @@
+@@ -29,5 +34,24 @@
  	}
  	srv := http.NewServer(opts...)
  	pb.RegisterArticleServiceHTTPServer(srv, article)
