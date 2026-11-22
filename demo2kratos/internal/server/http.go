@@ -52,6 +52,6 @@ func serveSwaggerHttpDocument(c *conf.Server, srv *http.Server) {
 		},
 	})
 
-	zapLog.SUG.Infoln("[DOC]", "(http://127.0.0.1:"+swaggokratos.MustGetPortNum(c.Http.Address)+"/doc/swagger/a/index.html)")
+	zapLog.SUG.Infoln("[DOC]", "(http://127.0.0.1:"+swaggokratos.MustExtractPort(c.Http.Address)+"/doc/swagger/a/index.html)")
 	zapLog.SUG.Infoln("接口文档添加成功")
 }

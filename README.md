@@ -23,6 +23,35 @@ Demo projects built with the Go-Kratos framework.
 
 <!-- TEMPLATE (EN) CLOSE: LANGUAGE NAVIGATION -->
 
+## Swagger UI demo
+
+This fork uses [kratos-swaggo](https://github.com/yylego/kratos-swaggo) v0.0.2 to serve Swagger UI and embedded OpenAPI YAML on each service's HTTP port. The specs come from `buf generate`; runtime JSON and document fields both use camelCase (`studentId`, `pageSize`). See [changes/demo1.md](changes/demo1.md) and [changes/demo2.md](changes/demo2.md) for the integration.
+
+With PostgreSQL configured in `configs/config.yaml`, run each command in its own terminal from the repository root:
+
+```bash
+cd demo1kratos && make all && make build && ./bin/demo1kratos -conf ./configs/config.yaml
+```
+
+```bash
+cd demo2kratos && make all && make build && ./bin/demo2kratos -conf ./configs/config.yaml
+```
+
+| Service | Swagger UI | OpenAPI YAML |
+| --- | --- | --- |
+| Student | http://localhost:8001/doc/swagger/a/index.html | http://localhost:8001/doc/abc/openapi-a.yaml |
+| Article | http://localhost:8002/doc/swagger/a/index.html | http://localhost:8002/doc/abc/openapi-a.yaml |
+
+The pages show `demo1kratos-title` with five operations and `demo2kratos-title` with six. Expand `GET /students` or `GET /articles`, click **Try it out**, enter `page=1` and `pageSize=1`, then click **Execute**: the response is 200 with the list and count. Creating an article uses the camelCase field `studentId` and requires an existing student ID.
+
+In v0.0.2, `MustExtractPort` builds the startup document link from the listening address and accepts a blank host too. To demonstrate it, stop demo1, then run this from `demo1kratos`:
+
+```bash
+KRATOS_SERVER_HTTP_ADDRESS=:8001 ./bin/demo1kratos -conf ./configs/config.yaml
+```
+
+The logged document link still has port 8001 and the same UI works. The mounted Gin routes no longer write request logs; Gin's debug route table at startup is separate from request logging. The application controls its logging and Gin mode.
+
 ## Notes to AI Assistants
 
 > If you are an AI coding assistant, read this whole section and understand it before doing anything.

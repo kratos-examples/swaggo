@@ -23,6 +23,35 @@
 
 <!-- TEMPLATE (ZH) CLOSE: LANGUAGE NAVIGATION -->
 
+## 接口文档演示
+
+这个分叉用 [kratos-swaggo](https://github.com/yylego/kratos-swaggo) v0.0.2，在每个服务的 HTTP 端口提供 Swagger UI 和嵌入二进制的 OpenAPI YAML。文档由 `buf generate` 生成；运行时 JSON 与文档均使用驼峰字段名，如 `studentId`、`pageSize`。接线差异见 [changes/demo1.md](changes/demo1.md) 和 [changes/demo2.md](changes/demo2.md)。
+
+先确保 `configs/config.yaml` 中的 PostgreSQL 可用，再从仓库根目录分别在两个终端运行：
+
+```bash
+cd demo1kratos && make all && make build && ./bin/demo1kratos -conf ./configs/config.yaml
+```
+
+```bash
+cd demo2kratos && make all && make build && ./bin/demo2kratos -conf ./configs/config.yaml
+```
+
+| 服务 | Swagger UI | OpenAPI YAML |
+| --- | --- | --- |
+| 学生 | http://localhost:8001/doc/swagger/a/index.html | http://localhost:8001/doc/abc/openapi-a.yaml |
+| 文章 | http://localhost:8002/doc/swagger/a/index.html | http://localhost:8002/doc/abc/openapi-a.yaml |
+
+学生页面标题为 `demo1kratos-title`，展示五个操作；文章页面标题为 `demo2kratos-title`，展示六个操作。展开 `GET /students` 或 `GET /articles`，点击 **Try it out**，填写 `page=1`、`pageSize=1`，再点击 **Execute**，应返回 200，包含列表和 count。创建文章时用驼峰字段 `studentId`，填写真实存在的学生 ID。
+
+v0.0.2 的 `MustExtractPort` 从监听地址生成启动日志中的文档链接，也支持省略主机名。停止 demo1 后，在 `demo1kratos` 目录运行：
+
+```bash
+KRATOS_SERVER_HTTP_ADDRESS=:8001 ./bin/demo1kratos -conf ./configs/config.yaml
+```
+
+日志中的文档链接仍使用 8001 端口，同一页面可正常访问。新版挂载的 Gin 路由不再自行打印请求日志；启动时 Gin debug 模式输出的路由表属于另一类日志，应用自行控制日志和 Gin 模式。
+
 ## 给 AI 助手的说明
 
 > 如果你是 AI 编程助手，动手前先把这一段读完、读懂。
